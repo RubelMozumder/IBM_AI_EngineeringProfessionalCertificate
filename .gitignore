@@ -12,6 +12,10 @@ __pycache__/
 # Adding ipynb files as the file will be saved as .Rmd
 *.ipynb
 
+# Adding Practice session files
+Practice*.Rmd
+practice*.Rmd
+Untitled*.Rmd
 
 # Distribution / packaging
 .Python
