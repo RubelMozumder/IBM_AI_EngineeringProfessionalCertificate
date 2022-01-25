@@ -1,0 +1,411 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.13.6
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<center>
+    <img src="https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-ML0101EN-SkillsNetwork/labs/Module%203/images/IDSNlogo.png" width="300" alt="cognitiveclass.ai logo"  />
+</center>
+
+# Decision Trees
+
+Estimated time needed: **15** minutes
+
+## Objectives
+
+After completing this lab you will be able to:
+
+*   Develop a classification model using Decision Tree Algorithm
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+In this lab exercise, you will learn a popular machine learning algorithm, Decision Trees. You will use this classification algorithm to build a model from the historical data of patients, and their response to different medications. Then you will use the trained decision tree to predict the class of an unknown patient, or to find a proper drug for a new patient.
+
+<!-- #endregion -->
+
+<h1>Table of contents</h1>
+
+<div class="alert alert-block alert-info" style="margin-top: 20px">
+    <ol>
+        <li><a href="https://#about_dataset">About the dataset</a></li>
+        <li><a href="https://#downloading_data">Downloading the Data</a></li>
+        <li><a href="https://#pre-processing">Pre-processing</a></li>
+        <li><a href="https://#setting_up_tree">Setting up the Decision Tree</a></li>
+        <li><a href="https://#modeling">Modeling</a></li>
+        <li><a href="https://#prediction">Prediction</a></li>
+        <li><a href="https://#evaluation">Evaluation</a></li>
+        <li><a href="https://#visualization">Visualization</a></li>
+    </ol>
+</div>
+<br>
+<hr>
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Import the Following Libraries:
+
+<ul>
+    <li> <b>numpy (as np)</b> </li>
+    <li> <b>pandas</b> </li>
+    <li> <b>DecisionTreeClassifier</b> from <b>sklearn.tree</b> </li>
+</ul>
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+import numpy as np 
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<div id="about_dataset">
+    <h2>About the dataset</h2>
+    Imagine that you are a medical researcher compiling data for a study. You have collected data about a set of patients, all of whom suffered from the same illness. During their course of treatment, each patient responded to one of 5 medications, Drug A, Drug B, Drug c, Drug x and y. 
+    <br>
+    <br>
+    Part of your job is to build a model to find out which drug might be appropriate for a future patient with the same illness. The features of this dataset are Age, Sex, Blood Pressure, and the Cholesterol of the patients, and the target is the drug that each patient responded to.
+    <br>
+    <br>
+    It is a sample of multiclass classifier, and you can use the training part of the dataset 
+    to build a decision tree, and then use it to predict the class of an unknown patient, or to prescribe a drug to a new patient.
+</div>
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<div id="downloading_data"> 
+    <h2>Downloading the Data</h2>
+    To download the data, we will use !wget to download it from IBM Object Storage.
+</div>
+
+<!-- #endregion -->
+
+```{python}
+# #!wget -O drug200.csv https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-ML0101EN-SkillsNetwork/labs/Module%203/data/drug200.csv
+```
+
+**Did you know?** When it comes to Machine Learning, you will likely be working with large datasets. As a business, where can you host your data? IBM is offering a unique opportunity for businesses, with 10 Tb of IBM Cloud Object Storage: [Sign up now for free](http://cocl.us/ML0101EN-IBM-Offer-CC)
+
+
+
+Now, read the data using pandas dataframe:
+
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+my_data = pd.read_csv("drug200.csv", delimiter=",")
+my_data[0:5]
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<div id="practice"> 
+    <h3>Practice</h3> 
+    What is the size of data? 
+</div>
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+# write your code here,
+print('data info: ',my_data.count())
+print('Feature and target :',my_data.columns)
+
+
+```
+
+<details><summary>Click here for the solution</summary>
+
+```python
+my_data.shape
+
+```
+
+</details>
+
+
+
+<div href="pre-processing">
+    <h2>Pre-processing</h2>
+</div>
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Using <b>my_data</b> as the Drug.csv data read by pandas, declare the following variables: <br>
+
+<ul>
+    <li> <b> X </b> as the <b> Feature Matrix </b> (data of my_data) </li>
+    <li> <b> y </b> as the <b> response vector </b> (target) </li>
+</ul>
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Remove the column containing the target name since it doesn't contain numeric values.
+
+<!-- #endregion -->
+
+```{python}
+X = my_data[['Age', 'Sex', 'BP', 'Cholesterol', 'Na_to_K']].values
+X[0:5]
+
+```
+
+As you may figure out, some features in this dataset are categorical, such as **Sex** or **BP**. Unfortunately, Sklearn Decision Trees does not handle categorical variables. We can still convert these features to numerical values using **pandas.get_dummies()**
+to convert the categorical variable into dummy/indicator variables.
+
+
+```{python}
+from sklearn import preprocessing
+le_sex = preprocessing.LabelEncoder()
+le_sex.fit(['F','M'])
+X[:,1] = le_sex.transform(X[:,1]) 
+
+
+le_BP = preprocessing.LabelEncoder()
+le_BP.fit([ 'LOW', 'NORMAL', 'HIGH'])
+X[:,2] = le_BP.transform(X[:,2])
+
+
+le_Chol = preprocessing.LabelEncoder()
+le_Chol.fit([ 'NORMAL', 'HIGH'])
+X[:,3] = le_Chol.transform(X[:,3]) 
+
+X[0:5]
+
+```
+
+Now we can fill the target variable.
+
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+y = my_data["Drug"]
+y[0:5]
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<hr>
+
+<div id="setting_up_tree">
+    <h2>Setting up the Decision Tree</h2>
+    We will be using <b>train/test split</b> on our <b>decision tree</b>. Let's import <b>train_test_split</b> from <b>sklearn.cross_validation</b>.
+</div>
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+from sklearn.model_selection import train_test_split
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Now <b> train_test_split </b> will return 4 different parameters. We will name them:<br>
+X_trainset, X_testset, y_trainset, y_testset <br> <br>
+The <b> train_test_split </b> will need the parameters: <br>
+X, y, test_size=0.3, and random_state=3. <br> <br>
+The <b>X</b> and <b>y</b> are the arrays required before the split, the <b>test_size</b> represents the ratio of the testing dataset, and the <b>random_state</b> ensures that we obtain the same splits.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+X_trainset, X_testset, y_trainset, y_testset = train_test_split(X, y, test_size=0.3, random_state=3)
+
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<h3>Practice</h3>
+Print the shape of X_trainset and y_trainset. Ensure that the dimensions match.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+# your code
+print(f'shape of X_trainset : { X_trainset.shape}')
+print(f'shape of X_testtest : { X_testset.shape}')
+print(f'shape of y_traintset : { y_trainset.shape}')
+print(f'shape of y_testset : { y_testset.shape}')
+```
+
+<details><summary>Click here for the solution</summary>
+
+```python
+print('Shape of X training set {}'.format(X_trainset.shape),'&',' Size of Y training set {}'.format(y_trainset.shape))
+
+```
+
+</details>
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Print the shape of X_testset and y_testset. Ensure that the dimensions match.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+# your code
+
+
+```
+
+<details><summary>Click here for the solution</summary>
+
+```python
+print('Shape of X training set {}'.format(X_testset.shape),'&',' Size of Y training set {}'.format(y_testset.shape))
+
+```
+
+</details>
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<hr>
+
+<div id="modeling">
+    <h2>Modeling</h2>
+    We will first create an instance of the <b>DecisionTreeClassifier</b> called <b>drugTree</b>.<br>
+    Inside of the classifier, specify <i> criterion="entropy" </i> so we can see the information gain of each node.
+</div>
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+drugTree = DecisionTreeClassifier(criterion="entropy", max_depth = 4)
+drugTree # it shows the default parameters
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Next, we will fit the data with the training feature matrix <b> X_trainset </b> and training  response vector <b> y_trainset </b>
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+drugTree.fit(X_trainset,y_trainset)
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<hr>
+
+<div id="prediction">
+    <h2>Prediction</h2>
+    Let's make some <b>predictions</b> on the testing dataset and store it into a variable called <b>predTree</b>.
+</div>
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+predTree = drugTree.predict(X_testset)
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+You can print out <b>predTree</b> and <b>y_testset</b> if you want to visually compare the predictions to the actual values.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+print (predTree [0:5])
+print (y_testset [0:5])
+
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<hr>
+
+<div id="evaluation">
+    <h2>Evaluation</h2>
+    Next, let's import <b>metrics</b> from sklearn and check the accuracy of our model.
+</div>
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+from sklearn import metrics
+import matplotlib.pyplot as plt
+print("DecisionTrees's Accuracy: ", metrics.accuracy_score(y_testset, predTree))
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+**Accuracy classification score** computes subset accuracy: the set of labels predicted for a sample must exactly match the corresponding set of labels in y_true.
+
+In multilabel classification, the function returns the subset accuracy. If the entire set of predicted labels for a sample strictly matches with the true set of labels, then the subset accuracy is 1.0; otherwise it is 0.0.
+
+<!-- #endregion -->
+
+<hr>
+
+<div id="visualization">
+    <h2>Visualization</h2>
+
+Let's visualize the tree
+
+</div>
+
+
+```{python}
+# Notice: You might need to uncomment and install the pydotplus and graphviz libraries if you have not installed these before
+# #!conda install -c conda-forge pydotplus -y
+# #!conda install -c conda-forge python-graphviz -y
+```
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+from  io import StringIO
+import pydotplus
+import matplotlib.image as mpimg
+from sklearn import tree
+import graphviz
+# %matplotlib inline 
+```
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+dot_data = StringIO()
+filename = "drugtree.png"
+featureNames = my_data.columns[0:5]
+out=tree.export_graphviz(drugTree,feature_names=featureNames, out_file=dot_data,
+                         class_names= np.unique(y_trainset), filled=True,
+                         special_characters=True,rotate=False)  
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+graph.write_png(filename)
+img = mpimg.imread(filename)
+plt.figure(figsize=(100, 200))
+plt.imshow(img,interpolation='nearest')
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<h2>Want to learn more?</h2>
+
+IBM SPSS Modeler is a comprehensive analytics platform that has many machine learning algorithms. It has been designed to bring predictive intelligence to decisions made by individuals, by groups, by systems – by your enterprise as a whole. A free trial is available through this course, available here: <a href="https://www.ibm.com/analytics/spss-statistics-software?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkML0101ENSkillsNetwork20718538-2021-01-01">SPSS Modeler</a>
+
+Also, you can use Watson Studio to run these notebooks faster with bigger datasets. Watson Studio is IBM's leading cloud solution for data scientists, built by data scientists. With Jupyter notebooks, RStudio, Apache Spark and popular libraries pre-packaged in the cloud, Watson Studio enables data scientists to collaborate on their projects without having to install anything. Join the fast-growing community of Watson Studio users today with a free account at <a href="https://www.ibm.com/cloud/watson-studio?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkML0101ENSkillsNetwork20718538-2021-01-01">Watson Studio</a>
+
+<!-- #endregion -->
+
+### Thank you for completing this lab!
+
+## Author
+
+Saeed Aghabozorgi
+
+### Other Contributors
+
+<a href="https://www.linkedin.com/in/joseph-s-50398b136/?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkML0101ENSkillsNetwork20718538-2021-01-01" target="_blank">Joseph Santarcangelo</a>
+
+## Change Log
+
+| Date (YYYY-MM-DD) | Version | Changed By | Change Description                   |
+| ----------------- | ------- | ---------- | ------------------------------------ |
+| 2020-11-20        | 2.2     | Lakshmi    | Changed import statement of StringIO |
+| 2020-11-03        | 2.1     | Lakshmi    | Changed URL of the csv               |
+| 2020-08-27        | 2.0     | Lavanya    | Moved lab to course repo in GitLab   |
+|                   |         |            |                                      |
+|                   |         |            |                                      |
+
+## <h3 align="center"> © IBM Corporation 2020. All rights reserved. <h3/>
+
