@@ -1,0 +1,31 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.13.6
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+
+# Lecture notes
+---
+## Evolution metrics in Regression:
+**MAE** (Mean absolute error): $\frac{1}{n}\sum_{i=1}^{n} | \hat y -y_i|$
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
