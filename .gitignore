@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+# Adding multimedia files
+*.mp4
+
+# Adding ipynb files as the file will be saved as .Rmd
+*.ipynb
+
+
 # Distribution / packaging
 .Python
 build/
