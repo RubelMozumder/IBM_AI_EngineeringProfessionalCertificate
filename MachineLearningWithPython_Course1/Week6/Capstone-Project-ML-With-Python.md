@@ -13,7 +13,7 @@ jupyter:
     name: python3
 ---
 
-# ML with python Project
+# ML-with-python Capstone Project
 
 ```python
 import numpy as np
@@ -45,7 +45,11 @@ This dataset is about past loans. The **Loan_train.csv** data set includes detai
 
 
 
-## Data Cleansing
+## Data Cleansing and Preparation
+
+- Data transformation from catagorical to numerical
+- Rmoving unnecessary/unrelavent data or features
+
 ### Data Structure 
 
 ```python
@@ -56,14 +60,12 @@ print(f'Columns: \n{df.columns}')
 
 ```
 
-## Data preparation
-- Data transformation from catagorical to numerical
-- Rmoving unnecessary/unrelavent data or features
-
 ```python
 print(f'Data structure: \n')
 df.head()
 ```
+
+### Visualization of some features
 
 ```python
 df['effective_date'] = pd.to_datetime(df['effective_date'])
@@ -78,17 +80,11 @@ gp = sns.FacetGrid(df, col='Gender',
                    height=4,
                    aspect=1.0 )
 gp.map(plt.hist, 'effective_date', bins=len(bins), ec='k')
-gp.figure.savefig('delet_1.png')
+#gp.figure.savefig('delet_1.png')
 gp.axes[1].legend()
 ```
 
 It seems, who got the loan begining of the week they are pay their loan off. Let's do feature binarization with a threshold value 3.
-
-```python
-# 0-> for the first 4 days
-# 1-> for the last 3 days
-df['effective_date'] = df['effective_date'].apply(lambda x: 1 if (x>3)  else 0)
-```
 
 ```python
 df['due_date'] = pd.to_datetime(df['due_date'])
@@ -108,30 +104,28 @@ gp.axes[-1].legend()
 
 There is no such epecific pattern for **'loan_status'** regarding **'due_data'**. Thus we can skip this data column.
 
-```python
-df.drop('due_date', axis=1, inplace=True)
-```
 
 Only two data samples are member of 'Master or Above' subclass, Therefore we can exclude the this subclass from our dataset. Oneway to do it transform these subclass, e.g. **'college', Bechalor**, into featurs label. 
-
-```python
-kk = df.copy()
-kk[kk['Principal']>=800]
-
-```
 
 ```python
 df['Principal'].value_counts(),df['terms'].value_counts()
 ```
 
+### Preparation of features and terget
+
 ```python
+# 0-> for the first 4 days
+# 1-> for the last 3 days
+df['effective_date'] = df['effective_date'].apply(lambda x: 1 if (x>3)  else 0)
+df.drop('due_date', axis=1, inplace=True)
+
 Feature = df[['loan_status', 'Principal', 'terms', 'effective_date', 
               'age', 'education', 'Gender']]
 # Removin the data sample with Master or Above
 
 Feature = Feature[Feature['education']!='Master or Above']
 Feature = Feature[Feature['Principal'] >= 800]
-Feature = Feature[Feature['terms'] > 7]
+#Feature = Feature[Feature['terms'] > 7]
 #Feature = pd.concat([Feature, pd.get_dummies(df['education'])], axis=1)
 #Feature.drop(['Master or Above'], axis=1, inplace=True)
 
@@ -154,12 +148,9 @@ Feature.head()
 
 ```python
 from sklearn.model_selection import train_test_split
-X[['Principal', 'terms', 'age',]] = preprocessing.StandardScaler().fit(X[['Principal', 'terms', 'age',]]).transform(X[['Principal', 'terms', 'age',]])
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
-```
-
-```python
-X
+X[['Principal', 'terms', 'age',]] = preprocessing.StandardScaler().fit(X[['Principal','terms', 'age',]]
+                                                                      ).transform(X[['Principal', 'terms', 'age',]])
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25,)
 ```
 
 ## Classification Algorithm
@@ -309,6 +300,8 @@ print(' F1 score : ', f1)
 y_test.value_counts()
 ```
 
+#### Calclating the confusion matrix
+
 ```python
 Conf_matr = confusion_matrix(y_true=y_test, 
                  y_pred=y_hat)
@@ -341,6 +334,8 @@ print(' Jaccard score : ', ja)
 print(' 1-logloss : ', ll)
 print(' F1 score : ', f1)
 ```
+
+#### Calclating the confusion matrix
 
 ```python
 Conf_matr = confusion_matrix(y_true=y_test, 
@@ -411,3 +406,10 @@ plot_confusion_matrix(cm=Conf_matr,
                       title='Confusion matrix with Logistic regression',
                       classes=['COLLECTION(0)', 'PAIDOFF(1)'])
 ```
+
+## Observation and Conclusion
+- Data cleansing and preparation is important part of ML as it improves the results. For example removing two samples corresponds to the `education[Master or Above`] and five samples associated with `Principle[<800]` improves the confusion matrix, though the changes in the accuracy is not significant.
+- The metrics discussed here give almost the same accuracy over different attempts.
+- Significant changes in confusion matrix have observed over the different attempts, e.g. on some attempts the confusion matrix gives better result in both `PAIDOFF(1)` and `COLLECION(0)` and on other attempts better result comes only in qestion of `PAIDOFF`.
+- Regarding the overall performances, the algorithm Decision Tree renders better prediction.  
+- Cross-validation might be a resovent for point(3) which will improve the parameters( $\large{\theta}$ from the expression $\large{\theta}^\intercal\large{x}$ ) implementing algorithm over the attempts. 
