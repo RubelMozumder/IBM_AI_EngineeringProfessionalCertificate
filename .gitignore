@@ -6,6 +6,22 @@ __pycache__/
 # C extensions
 *.so
 
+# Adding multimedia files
+*.mp4
+
+# Adding ipynb files as the file will be saved as .Rmd
+#*.ipynb
+
+# Adding Practice session files
+Practice*.Rmd
+practice*.Rmd
+Untitled*.Rmd
+*Untitled*
+*delete*
+*Delete*
+*Del*
+*del*
+
 # Distribution / packaging
 .Python
 build/
