@@ -15,6 +15,8 @@ jupyter:
 
 # ML-with-python Capstone Project
 
+## Project Title: Prediction a customer for a loan paid off or not
+
 ```python
 import numpy as np
 import pandas as pd
