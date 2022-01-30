@@ -182,6 +182,9 @@ le_Chol.fit([ 'NORMAL', 'HIGH'])
 X[:,3] = le_Chol.transform(X[:,3]) 
 
 X[0:5]
+```
+
+```{python}
 
 ```
 
