@@ -10,7 +10,7 @@ __pycache__/
 *.mp4
 
 # Adding ipynb files as the file will be saved as .Rmd
-*.ipynb
+#*.ipynb
 
 # Adding Practice session files
 Practice*.Rmd
