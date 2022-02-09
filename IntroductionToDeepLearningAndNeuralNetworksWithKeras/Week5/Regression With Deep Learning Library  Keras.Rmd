@@ -1,0 +1,64 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.13.6
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+<!-- #region -->
+<a href="https://cognitiveclass.ai/?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkDL0101ENSkillsNetwork20718188-2021-01-01"><img src= "https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/Logos/organization_logo/organization_logo.png" width=500></a>
+
+
+<h1 align=center><font size=5> Regression with deep learning library keras</font><h1>
+<!-- #endregion -->
+
+In this lab we will apply Keras library to build nural network for regression. The lab consists of four parts:
+1. To build baseline model
+2. Normalize the data
+3. Increase the number of epochs
+4. Increase the number of hidden layers
+
+### Purpose:
+After applying all four parts one will be able to understand impacts of Data Normalization, number of epochs and hidden layers on deep learning approach.
+
+```{python}
+import numpy as np
+from sklearn.model_selection._split import train_test_split
+from keras.models import sequential
+```
+
+```{python}
+def sequetial_model(ilayer, epochs):
+    
+    model=sequential()
+    
+    
+
+def base_model(data, epochs,
+               repeatation=1,
+               error_estimation=True
+               mean=True,
+               std=True):
+    if isinstance(data, tuple):
+        X_train, X_test, y_train, y_test = data
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(data, test_size=0.3)
+        
+    
+    
+```
+
+```{python}
+
+```
+
+```{python}
+
+```

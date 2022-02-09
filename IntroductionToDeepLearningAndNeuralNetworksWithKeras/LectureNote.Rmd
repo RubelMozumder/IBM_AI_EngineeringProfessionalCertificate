@@ -1,0 +1,112 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.13.6
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Lecture Notes
+
+<!-- #region -->
+## Week1
+
+### Some Applications of Deep Learning
+
+
+- Color restoration: Automatic colorization and color restoration in black and white images
+- From audio to video
+- Automatic Handwriting Generation
+- There is a plathora of other applications
+     Automatic Machine Translation
+     Automatically Addig Sounds to Silent Moives
+     Object Clssification and Detection in Images
+     Self-Driving Cars
+     
+
+### Three main topics associated with artificial neural networks
+
+- Forward Propagation
+- Backprotagation
+- Activation Functions (e.g. Sigmoid Function)
+
+
+<!-- #endregion -->
+
+<!-- #region -->
+## Week2
+
+
+### Complete training algorithm
+- Initialize the weights and the biases
+- Iteratively repeat the following steps (belong to a epoch):
+    - Calculate network output using the forward propagation including the activation function
+    - Calculate the error by mean square error
+    - Update weights and biases through backpropagation
+- Repeate the three steps until number of interations or epoch is reachaed or the minimum error is reached.
+
+### Activation functions
+
+Sigmoid Activation function is not good approach for a network that consists of the a large number of hidden layers. Such activation function gives the result in between the 0 and 1 thus the dirivatives are smalls on the initial hidden layers in the back propagation step. That is the reason initial layers are low learners and the remote layers (with respect to the input layer) are high learners.
+
+#### Parameter updates:
+
+##### For two hidden layers
+
+
+$$w_{new,1} = w_{old,1} - \eta \frac{\delta E}{\delta w_{1}}$$
+
+\begin{equation}
+w_{new,1} = w_{old,1} - \eta \frac{\delta E}{\delta a_{2}} \frac{\delta a_{2}}{\delta z_{2}} \frac{\delta z_{2}}{\delta a_{1}} \frac{\delta a_{1}}{\delta z_{1}} \frac{\delta z_{1}}{\delta w_{1}} 
+\end{equation}
+
+
+
+\begin{equation}
+w_{new,2} = w_{old,2} - \eta \frac{\delta E}{\delta a_{2}} \frac{\delta a_{2}}{\delta z_{2}} \frac{\delta z_{2}}{\delta w_{2}}
+\end{equation}
+
+
+Where $$ a_{2}=sigmoid funcion(z_{2}) = \frac{1}{1 + \exp(-z_{2})} $$
+
+
+So, with increasing the number of derivative factors due to increasing layers number the $\eta$ term becomes significatly neglegible. That's why sigmoid function is called vanishing gradient.
+
+#### Types of activation functions#
+1. Binary step function:
+2. Linear Function
+
+3. Sigmoid Function
+The Sigmoid Function $$a = \frac{1}{1+exp(-z)}$$ is limitted inbetween 0 and 1.
+
+4. Hyperbolic Tangent Function
+The Hyperbolic Tangent function $$a = \frac{\exp(z) - \exp(-z)}{\exp(z) + \exp(-z)}$$ limits the activation value +1 to -1. Though it is better than Sigmoid function, as it more slopy than Sigmoid, still it shows diminishing gradient discent propertise. 
+
+5. ReLu (Rectified Linear Unit)
+The Relu activation function $$a = \max(0,z)$$ is the most widely used activation function today. As being non-linear activation function (the function returns zero for z<0), the function does not activate all the nurons at the same time. The pratial nuron activation make the network sparse and very efficient. The function let to overcoming diminishing gradient discent. The function is only used in the hidden layers.
+6. Leaky ReLu
+7. Softmax Function
+The Softmax Function $$ a_{i} = \frac{\exp{z_i}}{\sum\exp{z_k}}$$ is ideally used in the output layer for classification for each input with probabilit.
+
+Among them 3,4,5, and 7 are the more popular activation functions.
+
+The activation 3 and 4 are avoided in many application due to vanishing gradient problem.
+<!-- #endregion -->
+
+## Week3
+
+
+
+### Dense Network
+
+The network which connects all the input nodes or nodes from the previous layer to one of the next node is called dense network.
+
+```{python}
+
+```
