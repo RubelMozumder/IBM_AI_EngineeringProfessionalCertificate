@@ -204,6 +204,14 @@ scores = model.evaluate(X_test, y_test, verbose=0)
 print("Accuracy: {} \n Error: {}".format(scores[1], 100-scores[1]*100))
 ```
 
+```{python}
+Regression model with deep learning library keras
+```
+
+```{python}
+To predict strength of a cement analyzing different predictors like blast furnace slag, water, ash. We tried DL sequential model with and without data normalization and different number of hidden layers.
+```
+
 ### Thank you for completing this lab!
 
 This notebook was created by [Alex Aklson](https://www.linkedin.com/in/aklson/?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkDL0101ENSkillsNetwork20718188-2021-01-01). I hope you found this lab interesting and educational. Feel free to contact me if you have any questions!

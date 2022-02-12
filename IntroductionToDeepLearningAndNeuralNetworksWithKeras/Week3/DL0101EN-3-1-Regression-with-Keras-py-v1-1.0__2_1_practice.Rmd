@@ -313,7 +313,10 @@ X_Train, X_Test, y_Train,  y_Test = train_test_split(predictors_norm, target, te
 
 ```{python}
 # fit the model
-model.fit(X_Train, y_Train, validation_data=(X_Test, y_Test), epochs=150, verbose=2)
+model.fit(X_Train, y_Train, 
+          validation_data=(X_Test, y_Test),
+          epochs=150,
+          verbose=2)
 ```
 
 ```{python}
@@ -321,7 +324,7 @@ score = model.evaluate(X_Test, y_Test, verbose=0)
 ```
 
 ```{python}
-score
+
 ```
 
 <!-- #region button=false new_sheet=false run_control={"read_only": false} -->
