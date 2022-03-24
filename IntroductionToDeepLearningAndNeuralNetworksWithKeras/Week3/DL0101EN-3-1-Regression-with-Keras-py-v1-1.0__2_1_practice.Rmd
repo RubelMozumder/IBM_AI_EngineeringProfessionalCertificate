@@ -1,0 +1,372 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.13.6
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<a href="https://cognitiveclass.ai/?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkDL0101ENSkillsNetwork20718188-2021-01-01"><img src = "https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/Logos/organization_logo/organization_logo.png" width = 400> </a>
+
+<h1 align=center><font size = 5>Regression Models with Keras</font></h1>
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+## Introduction
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+As we discussed in the videos, despite the popularity of more powerful libraries such as PyToch and TensorFlow, they are not easy to use and have a steep learning curve. So, for people who are just starting to learn deep learning, there is no better library to use other than the Keras library.
+
+Keras is a high-level API for building deep learning models. It has gained favor for its ease of use and syntactic simplicity facilitating fast development. As you will see in this lab and the other labs in this course, building a very complex deep learning network can be achieved with Keras with only few lines of code. You will appreciate Keras even more, once you learn how to build deep models using PyTorch and TensorFlow in the other courses.
+
+So, in this lab, you will learn how to use the Keras library to build a regression model.
+
+<!-- #endregion -->
+
+<h2>Regression Models with Keras</h2>
+
+<h3>Objective for this Notebook<h3>    
+<h5> 1. How to use the Keras library to build a regression model.</h5>
+<h5> 2. Download and Clean dataset </h5>
+<h5> 3. Build a Neural Network </h5>
+<h5> 4. Train and Test the Network. </h5>     
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+## Table of Contents
+
+<div class="alert alert-block alert-info" style="margin-top: 20px">
+
+<font size = 3>
+
+1.  <a href="https://#item31">Download and Clean Dataset</a>
+2.  <a href="https://#item32">Import Keras</a>
+3.  <a href="https://#item33">Build a Neural Network</a>
+4.  <a href="https://#item34">Train and Test the Network</a>
+
+</font>
+</div>
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<a id="item31"></a>
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+## Download and Clean Dataset
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Let's start by importing the <em>pandas</em> and the Numpy libraries.
+
+<!-- #endregion -->
+
+```{python}
+# All Libraries required for this lab are listed below. The libraries pre-installed on Skills Network Labs are commented. 
+# If you run this notebook on a different environment, e.g. your desktop, you may need to uncomment and install certain libraries.
+
+# #!pip install numpy==1.21.4
+# #!pip install pandas==1.3.4
+# #!pip install keras==2.1.6
+```
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+import pandas as pd
+import numpy as np
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+We will be playing around with the same dataset that we used in the videos.
+
+<strong>The dataset is about the compressive strength of different samples of concrete based on the volumes of the different ingredients that were used to make them. Ingredients include:</strong>
+
+<strong>1. Cement</strong>
+
+<strong>2. Blast Furnace Slag</strong>
+
+<strong>3. Fly Ash</strong>
+
+<strong>4. Water</strong>
+
+<strong>5. Superplasticizer</strong>
+
+<strong>6. Coarse Aggregate</strong>
+
+<strong>7. Fine Aggregate</strong>
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Let's download the data and read it into a <em>pandas</em> dataframe.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+#concrete_data = pd.read_csv('https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/DL0101EN/labs/data/concrete_data.csv')
+#concrete_data.head()
+
+# #!wget -O concrete_data.csv 'https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/DL0101EN/labs/data/concrete_data.csv'
+
+concrete_data = pd.read_csv('concrete_data.csv')
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+So the first concrete sample has 540 cubic meter of cement, 0 cubic meter of blast furnace slag, 0 cubic meter of fly ash, 162 cubic meter of water, 2.5 cubic meter of superplaticizer, 1040 cubic meter of coarse aggregate, 676 cubic meter of fine aggregate. Such a concrete mix which is 28 days old, has a compressive strength of 79.99 MPa.
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+#### Let's check how many data points we have.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+concrete_data.shape
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+So, there are approximately 1000 samples to train our model on. Because of the few samples, we have to be careful not to overfit the training data.
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Let's check the dataset for any missing values.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+concrete_data.describe()
+```
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+concrete_data.isnull()#.sum()
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+The data looks very clean and is ready to be used to build our model.
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+#### Split data into predictors and target
+
+<!-- #endregion -->
+
+The target variable in this problem is the concrete sample strength. Therefore, our predictors will be all the other columns.
+
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+concrete_data_columns = concrete_data.columns
+
+predictors = concrete_data[concrete_data_columns[concrete_data_columns != 'Strength']] # all columns except Strength
+target = concrete_data['Strength'] # Strength column
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<a id="item2"></a>
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Let's do a quick sanity check of the predictors and the target dataframes.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+predictors.head()
+```
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+target.head()
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Finally, the last step is to normalize the data by substracting the mean and dividing by the standard deviation.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+predictors_norm = (predictors - predictors.mean()) / predictors.std()
+predictors_norm.head()
+```
+
+```{python}
+predictors.std()
+```
+
+Let's save the number of predictors to *n_cols* since we will need this number when building our network.
+
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+n_cols = predictors_norm.shape[1] # number of predictors
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<a id="item1"></a>
+
+<!-- #endregion -->
+
+<a id='item32'></a>
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+## Import Keras
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Recall from the videos that Keras normally runs on top of a low-level library such as TensorFlow. This means that to be able to use the Keras library, you will have to install TensorFlow first and when you import the Keras library, it will be explicitly displayed what backend was used to install the Keras library. In CC Labs, we used TensorFlow as the backend to install Keras, so it should clearly print that when we import Keras.
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+#### Let's go ahead and import the Keras library
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+import keras
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+As you can see, the TensorFlow backend was used to install the Keras library.
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Let's import the rest of the packages from the Keras library that we will need to build our regressoin model.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+from keras.models import Sequential
+from keras.layers import Dense
+from sklearn.model_selection import train_test_split
+```
+
+<a id='item33'></a>
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+## Build a Neural Network
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Let's define a function that defines our regression model for us so that we can conveniently call it to create our model.
+
+<!-- #endregion -->
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+# define regression model
+def regression_model():
+    # create model
+    model = Sequential()
+    model.add(Dense(90, activation='relu', input_shape=(n_cols,)))
+    model.add(Dense(90, activation='relu'))
+    model.add(Dense(30, activation='relu'))
+    model.add(Dense(30, activation='relu'))
+    model.add(Dense(30, activation='relu'))    
+    model.add(Dense(10, activation='relu'))
+    model.add(Dense(1))
+    
+    # compile model
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['acc'])
+    return model
+```
+
+The above function create a model that has two hidden layers, each of 50 hidden units.
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+## Train and Test the Network
+
+<!-- #endregion -->
+
+Let's call the function now to create our model.
+
+
+```{python button=FALSE, new_sheet=FALSE, run_control={'read_only': False}}
+# build the model
+model = regression_model()
+```
+
+Next, we will train and test the model at the same time using the *fit* method. We will leave out 30% of the data for validation and we will train the model for 100 epochs.
+
+
+```{python}
+X_Train, X_Test, y_Train,  y_Test = train_test_split(predictors_norm, target, test_size=0.25)
+```
+
+```{python}
+# fit the model
+model.fit(X_Train, y_Train, 
+          validation_data=(X_Test, y_Test),
+          epochs=150,
+          verbose=2)
+```
+
+```{python}
+score = model.evaluate(X_Test, y_Test, verbose=0)
+```
+
+```{python}
+
+```
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<strong>You can refer to this [link](https://keras.io/models/sequential/?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkDL0101ENSkillsNetwork20718188-2021-01-01) to learn about other functions that you can use for prediction or evaluation.</strong>
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+Feel free to vary the following and note what impact each change has on the model's performance:
+
+1.  Increase or decreate number of neurons in hidden layers
+2.  Add more hidden layers
+3.  Increase number of epochs
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+### Thank you for completing this lab!
+
+This notebook was created by [Alex Aklson](https://www.linkedin.com/in/aklson/?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkDL0101ENSkillsNetwork20718188-2021-01-01). I hope you found this lab interesting and educational. Feel free to contact me if you have any questions!
+
+<!-- #endregion -->
+
+## Change Log
+
+| Date (YYYY-MM-DD) | Version | Changed By | Change Description                                          |
+| ----------------- | ------- | ---------- | ----------------------------------------------------------- |
+| 2020-09-21        | 2.0     | Srishti    | Migrated Lab to Markdown and added to course repo in GitLab |
+
+<hr>
+
+## <h3 align="center"> © IBM Corporation 2020. All rights reserved. <h3/>
+
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+This notebook is part of a course on **Coursera** called *Introduction to Deep Learning & Neural Networks with Keras*. If you accessed this notebook outside the course, you can take this course online by clicking [here](https://cocl.us/DL0101EN_Coursera_Week3\_LAB1).
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<hr>
+
+Copyright © 2019 [IBM Developer Skills Network](https://cognitiveclass.ai/?utm_medium=dswb&utm_source=bducopyrightlink&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkDL0101ENSkillsNetwork20718188-2021-01-01&utm_campaign=bdu). This notebook and its source code are released under the terms of the [MIT License](https://bigdatauniversity.com/mit-license/?utm_medium=Exinfluencer&utm_source=Exinfluencer&utm_content=000026UJ&utm_term=10006555&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDeveloperSkillsNetworkDL0101ENSkillsNetwork20718188-2021-01-01).
+
+<!-- #endregion -->

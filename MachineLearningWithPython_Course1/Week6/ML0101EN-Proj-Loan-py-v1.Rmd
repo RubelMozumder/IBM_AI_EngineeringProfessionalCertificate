@@ -83,7 +83,7 @@ df.head()
 ```
 
 ```{python}
-df.shape
+df['loan_status'].value_counts(normalize=True)
 ```
 
 <!-- #region button=false new_sheet=false run_control={"read_only": false} -->
