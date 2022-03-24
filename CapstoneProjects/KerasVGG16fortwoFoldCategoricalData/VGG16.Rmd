@@ -1,0 +1,321 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.13.6
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<a href="https://cognitiveclass.ai"><img src = "https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/Logos/organization_logo/organization_logo.png" width = 400> </a>
+
+<h1 align=center><font size = 5>Peer Review Final Assignment</font></h1>
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+## Introduction
+
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+In this lab, We will build an image classifier using the VGG16 pre-trained model, and we will evaluate it and compare its performance to the model we built in the last module using the ResNet50 pre-trained model.
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+## Table of Contents
+
+<div class="alert alert-block alert-info" style="margin-top: 20px">
+
+<font size = 3>    
+
+1. <a href="#item41">Download Data 
+2. <a href="#item42">Part 1</a>
+3. <a href="#item43">Part 2</a>  
+4. <a href="#item44">Part 3</a>  
+
+</font>
+    
+</div>
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+   
+<!-- #endregion -->
+
+<a id="item41"></a>
+
+
+## Download Data
+
+
+We use the <code>wget</code> command to download the data for this assignment from here: https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/DL0321EN/data/concrete_data_week4.zip
+
+
+To use the following cells to download the data.
+
+```{python}
+# #!wget -O ./Data/concrete_data.zip https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/DL0321EN/data/concrete_data_week4.zip
+```
+
+After unziping the data, we fill find the data has already been divided into a train, validation, and test sets.
+
+```{python}
+# #!unzip ./Data/concrete_data.zip -d ./Src/Data/
+```
+
+  
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<a id="item42"></a>
+<!-- #endregion -->
+
+## Part 1
+
+
+In this part, we will design a classifier using the VGG16 pre-trained model. Just like the ResNet50 model, we can import the model <code>VGG16</code> from <code>keras.applications</code>.
+
+
+We will essentially build your classifier as follows:
+1. To import libraries, modules, and packages we need. To import the *preprocess_input* function from <code>keras.applications.vgg16</code>.
+2. A batch size of 100 images for both training and validation.
+3. To construct an ImageDataGenerator for the training set and another one for the validation set. VGG16 was originally trained on 224 × 224 images, so we make sure to address that when defining the ImageDataGenerator instances.
+4. To create a sequential model using Keras. To add VGG16 model to it and dense layer.
+5. To compile the mode using the adam optimizer and the categorical_crossentropy loss function.
+6. Fitting the model on the augmented data using the ImageDataGenerators.
+
+
+The following cells to create the classifier.
+
+```{python}
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.preprocessing.image import ImageDataGenerator
+import numpy as np
+from keras.applications.vgg16 import VGG16
+from keras.applications.vgg16 import preprocess_input
+```
+
+```{python}
+num_classes = 2
+image_resize = 224
+
+batch_size_training = 100
+batch_size_validation = 100
+
+ImgGentr = ImageDataGenerator(
+    preprocessing_function=preprocess_input)
+```
+
+##### Image data generator for train and validation data group
+
+```{python}
+TrainGentr = ImgGentr.flow_from_directory('./Src/Data/concrete_data_week4/train/',
+                     batch_size=batch_size_training,
+                     target_size=(image_resize, image_resize),
+                     class_mode='categorical')
+ValGentr = ImgGentr.flow_from_directory('./Src/Data/concrete_data_week4/valid/',
+                     batch_size=batch_size_validation,
+                     target_size=(image_resize, image_resize),
+                     class_mode='categorical')
+```
+
+Creating Sequential objects for stacking Conv layers and densed layer. 
+
+```{python}
+model_vgg16 = Sequential()
+```
+
+###### Sequencing of the pretrained layers and newly outer layer (to be trained) 
+
+```{python}
+img_shape= np.shape(TrainGentr[0][0])[1:]
+model_vgg16.add(VGG16(input_shape=img_shape,
+    include_top=False,
+    pooling='avg',
+    weights='imagenet',
+    ))
+model_vgg16.add(Dense(num_classes, activation='softmax'))
+model_vgg16.layers[0].trainable = False
+model_vgg16.compile(optimizer='adam', 
+                    loss='categorical_crossentropy', 
+                    metrics=['accuracy'])
+```
+
+```{python}
+model_vgg16.summary()
+```
+
+###### To train and validate the model VGG16
+
+```{python}
+num_epochs=5
+steps_per_epoch_training = len(TrainGentr)
+steps_per_epoch_validation = len(ValGentr)
+
+fit_history = model_vgg16.fit_generator(
+    TrainGentr,
+    steps_per_epoch=steps_per_epoch_training,
+    epochs=num_epochs,
+    validation_data=ValGentr,
+    validation_steps=steps_per_epoch_validation,
+    verbose=1,
+)
+```
+
+   
+
+
+<a id="item43"></a>
+
+
+## Part 2
+
+
+In this part, we will evaluate the deep learning models VGG16 and ResNet50 on a test data. For this part, you will need to do the following:
+
+1. Load our saved model that was built using the ResNet50 model. 
+2. Construct an ImageDataGenerator for the test set. For this ImageDataGenerator instance, we only need to pass the directory of the test images, target size, and the **shuffle** parameter and set it to False.
+3. We use the **evaluate** method to evaluate our models on the test data, by passing the above ImageDataGenerator as an argument. We will learn more about **evaluate** [here](https://keras.io/models/sequential/).
+4. We need to print the performance of the classifier using the VGG16 pre-trained model.
+5. We need to print the performance of the classifier using the ResNet pre-trained model.
+
+
+
+Use the following cells to evaluate your models.
+
+```{python}
+# Loading VGG16 classifier
+model_vgg16_=keras.models.load_model('./Src/KerasClassifier_VGG16_model.h5')
+model_resnet50_=keras.models.load_model('./Src/KerasClassifier_ResNet50_model.h5')
+```
+
+###### Prepare test data for part two and three, where we validate and test the model with different data set than train step
+
+```{python}
+batch_size_test=100
+TestGentr = ImgGentr.flow_from_directory('./Src/Data/concrete_data_week4/test/',
+                     batch_size=batch_size_test,
+                     target_size=(image_resize, image_resize),
+                     shuffle=True,
+                     class_mode='categorical')
+
+steps_per_epoch_test = len(TestGentr)
+print(steps_per_epoch_test)
+```
+
+##### Model evaluation with VGG16
+
+```{python}
+eval_hist_vgg16=model_vgg16_.evaluate(
+            TestGentr,
+            steps=steps_per_epoch_test,
+            use_multiprocessing=False,
+            verbose=1)
+```
+
+##### Model evaluation with ResNet50
+
+```{python}
+eval_hist_restnet50=model_resnet50_.evaluate(
+            TestGentr,
+            steps=steps_per_epoch_test,
+            use_multiprocessing=True,
+            verbose=1)
+```
+
+   
+
+
+<a id="item44"></a>
+
+
+## Part 3
+
+
+In this model, we will predict whether the images in the test data are images of cracked concrete or not. We will do the following:
+
+1. We will use the **predict** method to predict the class of the images in the test data, by passing the test data ImageDataGenerator instance defined in the previous part as an argument. We can learn more about the **predict_generator** method [here](https://keras.io/models/sequential/).
+2. Report the class predictions of the first five images in the test set.
+
+<center>
+    <ul style="list-style-type:none">
+        <li>Positive</li>  
+        <li>Negative</li> 
+        <li>Positive</li>
+        <li>Positive</li>
+        <li>Negative</li>
+    </ul>
+</center>
+
+
+Use the following cells to make your predictions.
+
+
+##### Prediction with VGG16 Model
+
+```{python}
+pred_hist_vgg16=model_vgg16_.predict(
+            TestGentr)
+```
+
+```{python}
+yhat=np.argmax(pred_hist_vgg16, axis=1)
+y=np.argmax(TestGentr[0][1], axis=1)
+
+#Collecting class index and corresponding class
+cls_ind = TestGentr.class_indices
+IndToCls = {cls_ind[key]: key for key in cls_ind.keys()}
+
+for y_, yhat_ in zip(y[0:5],yhat[0:5]):
+    print(f'y : {IndToCls[y_]} & yhat : {IndToCls[yhat_]}\n')
+    
+```
+
+##### Predition with ResNet50 Model
+
+```{python}
+pred_hist_resnet50=model_resnet50_.predict(
+            TestGentr[0][0])
+```
+
+```{python}
+yhat=np.argmax(pred_hist_resnet50, axis=1)
+y=np.argmax(TestGentr[0][1], axis=1)
+
+#Collecting class index and corresponding class
+cls_ind = TestGentr.class_indices
+IndToCls = {cls_ind[key]: key for key in cls_ind.keys()}
+
+for y_, yhat_ in zip(y[0:5],yhat[0:5]):
+    print(f'y : {IndToCls[y_]} & yhat : {IndToCls[yhat_]}\n')
+```
+
+#### Comments: 
+1. According to the result from part-2 ResNet50 renders more accurate result than VGG16.
+2. ResNet50 consumes less time compare to the VGG16 model.
+
+
+  
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+### Thank you for completing this lab!
+
+This notebook was created by Alex Aklson.
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+This notebook is part of a course on **Coursera** called *AI Capstone Project with Deep Learning*. If you accessed this notebook outside the course, you can take this course online by clicking [here](https://cocl.us/DL0321EN_Coursera_Week4_LAB1).
+<!-- #endregion -->
+
+<!-- #region button=false new_sheet=false run_control={"read_only": false} -->
+<hr>
+
+Copyright &copy; 2020 [IBM Developer Skills Network](https://cognitiveclass.ai/?utm_source=bducopyrightlink&utm_medium=dswb&utm_campaign=bdu). This notebook and its source code are released under the terms of the [MIT License](https://bigdatauniversity.com/mit-license/).
+<!-- #endregion -->
